@@ -1,0 +1,6 @@
+2021-12-18 17:52:33,640 - main - INFO - Database Slow already exists.
+2021-12-18 17:52:33,647 - main - INFO - Slow was connected.
+2021-12-18 17:52:33,647 - main - INFO - Table rooms already exists.
+2021-12-18 17:52:33,648 - main - INFO - Table students already exists.
+2021-12-18 17:52:35,003 - main - INFO - Queries were completed.
+2021-12-18 17:52:35,007 - main - INFO - File "result.json" was created.
