@@ -95,11 +95,21 @@ class CLIParser:
                                  nargs=1,
                                  action='store')
         try:
-            args = self.parser.parse_args()
+            self.args = self.parser.parse_args()
         except (FileDoesNotExists, NotSupportedOutputFormat) as error:
             logging.error(error.message)
             sys.exit()
-        return args
+        return self.args
+
+    def retrieve_db_info(self):
+        database_params = {
+            'db_name': self.args.db_name[0] if self.args.db_name else os.environ.get('DATABASE'),
+            'host': self.args.db_host[0] if self.args.db_host else os.environ.get('HOST'),
+            'user': self.args.db_password[0] if self.args.db_password else os.environ.get('PASSWORD'),
+            'password': self.args.db_password[0] if self.args.db_password else os.environ.get('PASSWORD')
+        }
+        print(database_params)
+        return database_params
 
 
 class DBEngine(ABC):
@@ -139,11 +149,11 @@ class DataBaseEngine(DBEngine):
                         )""",
     }
 
-    def __init__(self, db_params):
-        self.db_name = db_params.db_name[0] if db_params.db_name else os.environ.get('DATABASE')
-        self.host = db_params.db_host[0] if db_params.db_host else os.environ.get('HOST')
-        self.user = db_params.db_user[0] if db_params.db_user else os.environ.get('USER')
-        self.password = db_params.db_password[0] if db_params.db_password else os.environ.get('PASSWORD')
+    def __init__(self, **kwargs):
+        self.db_name = kwargs['db_name']
+        self.host = kwargs['host']
+        self.user = kwargs['user']
+        self.password = kwargs['password']
         try:
             self.db = self.create_database()
         except mysql.connector.errors.DatabaseError:
@@ -289,8 +299,8 @@ class DataBaseExtractor:
         for arg in args:
             temp_result = self.query.fetch(arg)
             keys = self.query.SQL_MESSAGE.get(arg, None).get('keys', None)
-            for i in range(len(temp_result)):
-                temp_result[i] = OrderedDict(zip(keys, temp_result[i]))
+            for i, value in enumerate(temp_result):
+                temp_result[i] = OrderedDict(zip(keys, value))
             self.result.append({
                 arg: temp_result
             })
@@ -372,7 +382,9 @@ def main():
     cli_parser = CLIParser()
     options = cli_parser.parse_args()
 
-    my_db = DataBaseEngine(options)
+    database_params = cli_parser.retrieve_db_info()
+
+    my_db = DataBaseEngine(**database_params)
     my_db.create_tables('rooms', 'students')
 
     rooms_file_data = FileReader.read_file(options.source_to_rooms_file)
