@@ -108,7 +108,6 @@ class CLIParser:
             'user': self.args.db_password[0] if self.args.db_password else os.environ.get('USER'),
             'password': self.args.db_password[0] if self.args.db_password else os.environ.get('PASSWORD')
         }
-        print(database_params)
         return database_params
 
 
